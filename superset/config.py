@@ -478,15 +478,15 @@ DEFAULT_FEATURE_FLAGS: dict[str, bool] = {
     # and doesn't work with all nested types.
     "PRESTO_EXPAND_DATA": False,
     # Exposes API endpoint to compute thumbnails
-    "THUMBNAILS": False,
+    "THUMBNAILS": True,
     # Enable the endpoints to cache and retrieve dashboard screenshots via webdriver.
     # Requires configuring Celery and a cache using THUMBNAIL_CACHE_CONFIG.
-    "ENABLE_DASHBOARD_SCREENSHOT_ENDPOINTS": False,
+    "ENABLE_DASHBOARD_SCREENSHOT_ENDPOINTS": True,
     # Generate screenshots (PDF or JPG) of dashboards using the web driver.
     # When disabled, screenshots are generated on the fly by the browser.
     # This feature flag is used by the download feature in the dashboard view.
     # It is dependent on ENABLE_DASHBOARD_SCREENSHOT_ENDPOINT being enabled.
-    "ENABLE_DASHBOARD_DOWNLOAD_WEBDRIVER_SCREENSHOT": False,
+    "ENABLE_DASHBOARD_DOWNLOAD_WEBDRIVER_SCREENSHOT": True,
     "SHARE_QUERIES_VIA_KV_STORE": False,
     "TAGGING_SYSTEM": False,
     "SQLLAB_BACKEND_PERSISTENCE": True,

@@ -29,6 +29,7 @@ x-superset-volumes: &superset-volumes
   - ./superset-frontend:/app/superset-frontend
   - superset_home:/app/superset_home
   - ./tests:/app/tests
+  - /Users/hd/Projects/interval/agent-framework/database/grouplink_events.sqlite:/app/data/grouplink_events.sqlite
 
 x-common-build: &common-build
   context: .
@@ -37,8 +38,8 @@ x-common-build: &common-build
     - apache/superset-cache:3.10-slim-bookworm
   args:
     DEV_MODE: "true"
-    INCLUDE_CHROMIUM: ${INCLUDE_CHROMIUM:-false}
-    INCLUDE_FIREFOX: ${INCLUDE_FIREFOX:-false}
+    INCLUDE_CHROMIUM: ${INCLUDE_CHROMIUM:-true}
+    INCLUDE_FIREFOX: ${INCLUDE_FIREFOX:-true}
     BUILD_TRANSLATIONS: ${BUILD_TRANSLATIONS:-false}
 
 services:

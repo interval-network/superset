@@ -125,17 +125,22 @@ RUN pip install --no-cache-dir --upgrade uv
 RUN uv venv /app/.venv
 ENV PATH="/app/.venv/bin:${PATH}"
 
-# Install Playwright and optionally setup headless browsers
+# Install Firefox ESR and geckodriver for Selenium
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        firefox-esr \
+        libx11-xcb1 \
+        libdbus-glib-1-2
+
+# Install Playwright and optionally setup Chromium
 ARG INCLUDE_CHROMIUM="true"
-ARG INCLUDE_FIREFOX="false"
 RUN --mount=type=cache,target=/root/.cache/uv\
-    if [ "$INCLUDE_CHROMIUM" = "true" ] || [ "$INCLUDE_FIREFOX" = "true" ]; then \
+    if [ "$INCLUDE_CHROMIUM" = "true" ]; then \
         uv pip install playwright && \
         playwright install-deps && \
-        if [ "$INCLUDE_CHROMIUM" = "true" ]; then playwright install chromium; fi && \
-        if [ "$INCLUDE_FIREFOX" = "true" ]; then playwright install firefox; fi; \
+        playwright install chromium; \
     else \
-        echo "Skipping browser installation"; \
+        echo "Skipping Chromium installation"; \
     fi
 
 ######################################################################

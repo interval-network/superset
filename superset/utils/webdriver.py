@@ -17,6 +17,7 @@
 
 from __future__ import annotations
 
+import os
 import logging
 from abc import ABC, abstractmethod
 from enum import Enum
@@ -37,6 +38,10 @@ from selenium.webdriver.common.service import Service
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.support import expected_conditions as EC  # noqa: N812
 from selenium.webdriver.support.ui import WebDriverWait
+from webdriver_manager.firefox import GeckoDriverManager
+from webdriver_manager.chrome import ChromeDriverManager
+import subprocess
+import shutil
 
 from superset import feature_flag_manager
 from superset.extensions import machine_auth_provider_factory
@@ -252,21 +257,26 @@ class WebDriverSelenium(WebDriverProxy):
             driver_class: type[WebDriver] = firefox.webdriver.WebDriver
             service_class: type[Service] = firefox.service.Service
             options = firefox.options.Options()
+            
+            # Get Firefox driver path from GeckoDriverManager
+            driver_path = GeckoDriverManager().install()
+            
             profile = FirefoxProfile()
             profile.set_preference("layout.css.devPixelsPerPx", str(pixel_density))
             options.profile = profile
-            kwargs = {"options": options}
+            service = service_class(driver_path)
+            kwargs = {"options": options, "service": service}
         elif self._driver_type == "chrome":
             driver_class = chrome.webdriver.WebDriver
             service_class = chrome.service.Service
             options = chrome.options.Options()
             options.add_argument(f"--force-device-scale-factor={pixel_density}")
             options.add_argument(f"--window-size={self._window[0]},{self._window[1]}")
-            kwargs = {"options": options}
+            # Use ChromeDriverManager to handle driver installation
+            service = service_class(ChromeDriverManager().install())
+            kwargs = {"options": options, "service": service}
         else:
-            raise Exception(  # pylint: disable=broad-exception-raised
-                f"Webdriver name ({self._driver_type}) not supported"
-            )
+            raise Exception(f"Webdriver name ({self._driver_type}) not supported")
 
         # Prepare args for the webdriver init
         for arg in list(current_app.config["WEBDRIVER_OPTION_ARGS"]):
@@ -297,9 +307,6 @@ class WebDriverSelenium(WebDriverProxy):
             if hasattr(options, "profile"):
                 for name, value in driver_opts.get("preferences", {}).items():
                     options.profile.set_preference(str(name), value)
-            kwargs |= {
-                "service": service_class(**driver_srv),
-            }
 
         logger.debug("Init selenium driver")
         return driver_class(**kwargs)
