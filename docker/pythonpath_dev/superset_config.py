@@ -59,6 +59,8 @@ REDIS_PORT = os.getenv("REDIS_PORT", "6379")
 REDIS_CELERY_DB = os.getenv("REDIS_CELERY_DB", "0")
 REDIS_RESULTS_DB = os.getenv("REDIS_RESULTS_DB", "1")
 
+CSRF_ENABLED = False
+
 RESULTS_BACKEND = FileSystemCache("/app/superset_home/sqllab")
 
 CACHE_CONFIG = {
@@ -104,6 +106,9 @@ WEBDRIVER_BASEURL = "http://superset:8088/"  # When using docker compose baseurl
 WEBDRIVER_BASEURL_USER_FRIENDLY = WEBDRIVER_BASEURL
 SQLLAB_CTAS_NO_LIMIT = True
 
+FAB_API_SWAGGER_UI = True
+JWT_VERIFY_SUB = False
+
 log_level_text = os.getenv("SUPERSET_LOG_LEVEL", "INFO")
 LOG_LEVEL = getattr(logging, log_level_text.upper(), logging.INFO)
 
@@ -120,3 +125,50 @@ try:
     )
 except ImportError:
     logger.info("Using default Docker config...")
+
+## Enabling Thumbnails ##
+THUMBNAILS = True
+ENABLE_DASHBOARD_SCREENSHOT_ENDPOINTS = True
+ENABLE_DASHBOARD_DOWNLOAD_WEBDRIVER_SCREENSHOT = True
+
+## Webdriver Configuration ##
+WEBDRIVER_TYPE = "firefox"
+
+# Window size - this will impact the rendering of the data
+WEBDRIVER_WINDOW = {
+    "dashboard": (1600, 2000),
+    "slice": (3000, 1200),
+    "pixel_density": 1,
+}
+
+# Any config options to be passed as-is to the webdriver
+WEBDRIVER_CONFIGURATION = {
+    "options": {
+        "capabilities": {},
+        "preferences": {},
+        "binary": "/usr/bin/firefox-esr"  # Add this line to specify Firefox binary location
+    },
+    "service": {
+        "log_output": "/dev/null",
+        "service_args": [],
+        "port": 0,
+        "env": {}
+    },
+}
+
+# Additional args to be passed as arguments to the config object
+WEBDRIVER_OPTION_ARGS = [
+    "--headless",
+    "--no-sandbox",
+    "--disable-gpu"
+]
+
+## Cache Configuration ##
+THUMBNAIL_CACHE_CONFIG = {
+    'CACHE_TYPE': 'RedisCache',
+    'CACHE_DEFAULT_TIMEOUT': 60 * 60 * 24,  # 24 hours
+    'CACHE_KEY_PREFIX': 'superset_thumb_',
+    'CACHE_REDIS_HOST': REDIS_HOST,  # Uses the existing REDIS_HOST from environment
+    'CACHE_REDIS_PORT': REDIS_PORT,  # Uses the existing REDIS_PORT from environment
+    'CACHE_REDIS_DB': 2,  # Using DB 2 for thumbnails (0 is Celery, 1 is results)
+}

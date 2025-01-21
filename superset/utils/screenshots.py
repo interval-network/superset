@@ -134,7 +134,7 @@ class BaseScreenshot:
 
     @staticmethod
     def get_from_cache_key(cache: Cache, cache_key: str) -> BytesIO | None:
-        logger.info("Attempting to get from cache: %s", cache_key)
+        logger.info("Attempting to get from cache: %s", cache_key)        
         if payload := cache.get(cache_key):
             return BytesIO(payload)
         logger.info("Failed at getting from cache: %s", cache_key)
@@ -151,17 +151,13 @@ class BaseScreenshot:
     ) -> bytes | None:
         """
         Fetches the screenshot, computes the thumbnail and caches the result
-
-        :param user: If no user is given will use the current context
-        :param cache: The cache to keep the thumbnail payload
-        :param window_size: The window size from which will process the thumb
-        :param thumb_size: The final thumbnail size
-        :param force: Will force the computation even if it's already cached
-        :return: Image payload
         """
         cache_key = cache_key or self.cache_key(window_size, thumb_size)
         window_size = window_size or self.window_size
         thumb_size = thumb_size or self.thumb_size
+        
+        logger.info("Starting compute_and_cache with cache_key: %s", cache_key)
+        
         if not force and cache and cache.get(cache_key):
             logger.info("Thumb already cached, skipping...")
             return None
@@ -175,12 +171,14 @@ class BaseScreenshot:
                 f"screenshot.compute.{self.thumbnail_type}", force=force
             ):
                 payload = self.get_screenshot(user=user, window_size=window_size)
+                logger.info("Screenshot captured successfully, size: %d bytes", len(payload) if payload else 0)
         except Exception as ex:  # pylint: disable=broad-except
             logger.warning("Failed at generating thumbnail %s", ex, exc_info=True)
 
         if payload and window_size != thumb_size:
             try:
                 payload = self.resize_image(payload, thumb_size=thumb_size)
+                logger.info("Image resized successfully, new size: %d bytes", len(payload) if payload else 0)
             except Exception as ex:  # pylint: disable=broad-except
                 logger.warning("Failed at resizing thumbnail %s", ex, exc_info=True)
                 payload = None
@@ -190,8 +188,25 @@ class BaseScreenshot:
             with event_logger.log_context(
                 f"screenshot.cache.{self.thumbnail_type}", force=force
             ):
+                
+                # Try to write to cache
                 cache.set(cache_key, payload)
+                
+                # Verify the write by reading back
+                cached_data = cache.get(cache_key)
+                logger.info(f'Verification read - data exists: {cached_data is not None}')
+                if cached_data:
+                    logger.info(f'Verification read - size matches: {len(cached_data) == len(payload)}')
+                
+                # List all keys in cache
+                redis_client = cache.cache._write_client
+                all_keys = redis_client.keys('*')
+                
+                logger.info("Successfully cached thumbnail with key: %s", cache_key)
             logger.info("Done caching thumbnail")
+        else:
+            logger.warning("No payload to cache for key: %s", cache_key)
+        
         return payload
 
     @classmethod
