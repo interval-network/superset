@@ -151,6 +151,13 @@ class BaseScreenshot:
     ) -> bytes | None:
         """
         Fetches the screenshot, computes the thumbnail and caches the result
+
+        :param user: If no user is given will use the current context
+        :param cache: The cache to keep the thumbnail payload
+        :param window_size: The window size from which will process the thumb
+        :param thumb_size: The final thumbnail size
+        :param force: Will force the computation even if it's already cached
+        :return: Image payload
         """
         cache_key = cache_key or self.cache_key(window_size, thumb_size)
         window_size = window_size or self.window_size

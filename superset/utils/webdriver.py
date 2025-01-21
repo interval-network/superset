@@ -40,8 +40,6 @@ from selenium.webdriver.support import expected_conditions as EC  # noqa: N812
 from selenium.webdriver.support.ui import WebDriverWait
 from webdriver_manager.firefox import GeckoDriverManager
 from webdriver_manager.chrome import ChromeDriverManager
-import subprocess
-import shutil
 
 from superset import feature_flag_manager
 from superset.extensions import machine_auth_provider_factory
