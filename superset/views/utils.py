@@ -151,7 +151,11 @@ def get_form_data(
     form_data: dict[str, Any] = initial_form_data or {}
 
     if has_request_context():
-        json_data = request.get_json(cache=True) if request.is_json else {}
+        try:
+            json_data = request.get_json(cache=True) if request.is_json else {}
+        except Exception as e:
+            print(f"Error getting JSON data: {e}")
+            json_data = {}
 
         # chart data API requests are JSON
         first_query = (
