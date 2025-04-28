@@ -30,6 +30,7 @@ x-superset-volumes: &superset-volumes
   - superset_home:/app/superset_home
   - ./tests:/app/tests
   - /Users/hd/Projects/interval/agent-framework/database/grouplink_events.sqlite:/app/data/grouplink_events.sqlite
+  - ./openf1_data_session-9158.sqlite:/app/data/openf1_data_session-9158.sqlite
 
 x-common-build: &common-build
   context: .
@@ -194,7 +195,7 @@ services:
       - path: docker/.env-local # optional override
         required: false
     environment:
-      CELERYD_CONCURRENCY: 2
+      CELERYD_CONCURRENCY: 4
       CYPRESS_CONFIG: "${CYPRESS_CONFIG:-}"
       SUPERSET_LOG_LEVEL: "${SUPERSET_LOG_LEVEL:-info}"
     restart: unless-stopped

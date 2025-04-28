@@ -101,11 +101,6 @@ class CeleryConfig:
 
 CELERY_CONFIG = CeleryConfig
 
-FEATURE_FLAGS = {"ALERT_REPORTS": True}
-ALERT_REPORTS_NOTIFICATION_DRY_RUN = True
-WEBDRIVER_BASEURL = "http://superset:8088/"  # When using docker compose baseurl should be http://superset_app:8088/  # noqa: E501
-# The base URL for the email report hyperlinks.
-WEBDRIVER_BASEURL_USER_FRIENDLY = WEBDRIVER_BASEURL
 SQLLAB_CTAS_NO_LIMIT = True
 
 FAB_API_SWAGGER_UI = True
@@ -129,40 +124,46 @@ except ImportError:
     logger.info("Using default Docker config...")
 
 ## Enabling Thumbnails ##
+FEATURE_FLAGS = {
+    "ALERT_REPORTS": True,
+    "THUMBNAILS": True,
+    "THUMBNAILS_SQLA_LISTENERS": True,
+    "ENABLE_DASHBOARD_SCREENSHOT_ENDPOINTS": True,
+    "ENABLE_DASHBOARD_DOWNLOAD_WEBDRIVER_SCREENSHOT": True,
+    "PLAYWRIGHT_REPORTS_AND_THUMBNAILS": True
+}
+
+ALERT_REPORTS_NOTIFICATION_DRY_RUN = True
+
 THUMBNAILS = True
 ENABLE_DASHBOARD_SCREENSHOT_ENDPOINTS = True
 ENABLE_DASHBOARD_DOWNLOAD_WEBDRIVER_SCREENSHOT = True
 
+from superset.tasks.types import ExecutorType
+      
+THUMBNAIL_SELENIUM_USER = "admin"
+THUMBNAIL_EXECUTE_AS = [ExecutorType.SELENIUM]
+
+SCREENSHOT_SELENIUM_HEADSTART=0
+SCREENSHOT_SELENIUM_ANIMATION_WAIT=0
+
 ## Webdriver Configuration ##
-WEBDRIVER_TYPE = "firefox"
+WEBDRIVER_TYPE = "chrome"
 
-# Window size - this will impact the rendering of the data
-WEBDRIVER_WINDOW = {
-    "dashboard": (1600, 2000),
-    "slice": (3000, 1200),
-    "pixel_density": 1,
-}
-
-# Any config options to be passed as-is to the webdriver
-WEBDRIVER_CONFIGURATION = {
-    "options": {
-        "capabilities": {},
-        "preferences": {},
-        "binary": "/usr/bin/firefox-esr"  # Add this line to specify Firefox binary location
-    },
-    "service": {
-        "log_output": "/dev/null",
-        "service_args": [],
-        "port": 0,
-        "env": {}
-    },
-}
+WEBDRIVER_BASEURL = "http://superset:8088/"  # When using docker compose baseurl should be http://superset_app:8088/  # noqa: E501
+# The base URL for the email report hyperlinks.
+WEBDRIVER_BASEURL_USER_FRIENDLY = WEBDRIVER_BASEURL
 
 # Additional args to be passed as arguments to the config object
 WEBDRIVER_OPTION_ARGS = [
+    "--force-device-scale-factor=2.0",
+    "--high-dpi-support=2.0",
     "--headless",
+    "--disable-gpu",
+    "--disable-dev-shm-usage",
     "--no-sandbox",
-    "--disable-gpu"
+    "--disable-setuid-sandbox",
+    "--disable-extensions",
 ]
 
 ## Cache Configuration ##
@@ -173,4 +174,15 @@ THUMBNAIL_CACHE_CONFIG = {
     'CACHE_REDIS_HOST': REDIS_HOST,  # Uses the existing REDIS_HOST from environment
     'CACHE_REDIS_PORT': REDIS_PORT,  # Uses the existing REDIS_PORT from environment
     'CACHE_REDIS_DB': 2,  # Using DB 2 for thumbnails (0 is Celery, 1 is results)
+}
+
+SCREENSHOT_PLAYWRIGHT_DEFAULT_TIMEOUT = 60 * 1000 # 60 seconds
+
+# sqlalchemy pool optimization
+SQLALCHEMY_ENGINE_OPTIONS = {
+    'isolation_level': 'READ COMMITTED',
+    'pool_size': 20,
+    'max_overflow': 10,
+    'pool_timeout': 30,
+    'pool_recycle': 900,
 }

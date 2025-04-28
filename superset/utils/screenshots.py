@@ -165,7 +165,10 @@ class BaseScreenshot:
         
         logger.info("Starting compute_and_cache with cache_key: %s", cache_key)
         
-        if not force and cache and cache.get(cache_key):
+        # for now, let's skip force flag and instead rely on cache timeouts
+        #   as this creates a bunch of queue churn from broken examples
+        #if not force and cache and cache.get(cache_key):
+        if cache and cache.get(cache_key):
             logger.info("Thumb already cached, skipping...")
             return None
         logger.info("Processing url for thumbnail: %s", cache_key)
