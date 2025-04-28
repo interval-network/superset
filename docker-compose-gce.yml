@@ -30,6 +30,7 @@ x-superset-volumes: &superset-volumes
   - superset_home:/app/superset_home
   - ./tests:/app/tests
   - /mnt/gcs-bucket/openf1_data_session-9158.sqlite:/app/data/openf1_data_session-9158.sqlite
+  - /mnt/gcs-bucket/openf1_data_session-first-five.sqlite:/app/data/openf1_data_session-first-five.sqlite
 
 x-common-build: &common-build
   context: .
@@ -180,7 +181,7 @@ services:
     env_file:
       - docker/.env # default
     environment:
-      CELERYD_CONCURRENCY: 2
+      CELERYD_CONCURRENCY: 4
       CYPRESS_CONFIG: "${CYPRESS_CONFIG:-}"
       SUPERSET_LOG_LEVEL: "${SUPERSET_LOG_LEVEL:-info}"
     restart: unless-stopped
